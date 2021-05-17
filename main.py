@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for, send_file
 import os
 
 
@@ -21,6 +21,10 @@ def create_app(test_config=None):
     @app.route('/')
     def hello_handler():
         return render_template("base.html")
+
+    @app.route('/images/<filename>')
+    def images(filename):
+        return send_file(f'static/images/{filename}')
 
     return app
 
