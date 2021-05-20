@@ -6,7 +6,6 @@ document.body.appendChild(app.view);
 
 
 // Init loader
-console.log(squareSize)
 PIXI.loader
     .add(["images/pawn.png",
         "images/dot.png"])
@@ -103,43 +102,11 @@ function keyboard(value) {
 }
 
 function getBlackPawn(x, y) {
-    // Init
-    let pawn = new PIXI.Sprite(PIXI.loader.resources["images/pawn.png"].texture);
-    pawn.width = squareSize;
-    pawn.height = squareSize;
-    pawn.x = x * squareSize;
-    pawn.y = y * squareSize;
-    pawn.interactive = true;
-    pawn.mousemode = true;
-    pawn.move = false;
-
-    // Check if move availible, destroy dots
-    pawn.on('pointerup', () => {
-        pawn.move = false;
-        if (dots.some(
-            (dot) => {
-                return (snap(dot.x) === snap(pawn.x)) && (snap(dot.y) === snap(pawn.y));
-            }
-        )) {
-            pawn.x = snap(pawn.x) * squareSize;
-            pawn.y = snap(pawn.y) * squareSize;
-        } else {
-            pawn.x = pawn.origin.x
-            pawn.y = pawn.origin.y
-        }
-        pawn.origin = {x: pawn.x, y: pawn.y}
-        destroy(dots);
-        console.log(dots)
-    });
-
-    // display all availible moves
-    pawn.on('pointerdown', () => {
-        pawn.move = true;
-        pawn.origin = {x: pawn.x, y: pawn.y}
-        if (snap(pawn.y) === 1) {
+    let alm = function(piece) {
+        if (snap(piece.y) === 1) {
             dots = dots.concat(
                 getDot(
-                    [snap(pawn.x), snap(pawn.x)],
+                    [snap(piece.x), snap(piece.x)],
                     [2, 3]
                 )
             );
@@ -149,26 +116,61 @@ function getBlackPawn(x, y) {
         } else {
             dots = dots.concat(
                 getDot(
-                    [snap(pawn.x)],
-                    [snap(pawn.y) + 1]
+                    [snap(piece.x)],
+                    [snap(piece.y) + 1]
                 )
             );
             for (let i of dots) {
-                app.stage.addChild(i)
+                app.stage.addChild(i);
             }
         }
-    });
+    }
 
-    // Pawn follows cursor
-    pawn.on('pointermove', (event) => {
-        if (pawn.move) {
+    return getPiece(x,y, 'pawn', alm)
+}
+
+function getPiece(x, y, img, addLegalMoves) {
+    // Init
+    let piece = new PIXI.Sprite(PIXI.loader.resources['images/' + img + '.png'].texture);
+    piece.width = squareSize;
+    piece.height = squareSize;
+    piece.x = x * squareSize;
+    piece.y = y * squareSize;
+    piece.interactive = true;
+    piece.mousemode = true;
+    piece.move = false;
+
+    piece.on('pointerdown', () => {
+        piece.move = true;
+        piece.origin = {x: piece.x, y: piece.y};
+        addLegalMoves(piece)
+    })
+    piece.on('pointerup', () => {
+        piece.move = false;
+        if (dots.some(
+            (dot) => {
+                return (snap(dot.x) === snap(piece.x)) && (snap(dot.y) === snap(piece.y));
+            }
+        )) {
+            piece.x = snap(piece.x) * squareSize;
+            piece.y = snap(piece.y) * squareSize;
+        } else {
+            piece.x = piece.origin.x
+            piece.y = piece.origin.y
+        }
+        piece.origin = {x: piece.x, y: piece.y}
+        destroy(dots);
+    })
+    // Piece follows cursor
+    piece.on('pointermove', (event) => {
+        if (piece.move) {
             let e = event.data.global;
-            pawn.x = e.x - squareSize / 2;
-            pawn.y = e.y - squareSize / 2;
+            piece.x = e.x - squareSize / 2;
+            piece.y = e.y - squareSize / 2;
         }
     });
 
-    return pawn
+    return piece
 }
 
 // Dot factory, takes arrays
