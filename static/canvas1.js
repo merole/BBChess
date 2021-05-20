@@ -4,20 +4,23 @@ let app = new PIXI.Application({width: 512, height: 512, backgroundColor: 0xffff
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild(app.view);
 
-let squareSize = app.renderer.width / 16;
+
+// Init loader
 console.log(squareSize)
 PIXI.loader
     .add(["images/pawn.png",
         "images/dot.png"])
     .load(setup);
 
-
-let dot, pawns, dots;
+// Init program-wise vars
+let dot, pawns, dots, squareSize;
 pawns = [];
 dots = [];
+squareSize = app.renderer.width / 16;
 
 function setup() {
 
+    // Draw squares to canvas
     for (let i = 0; i < 17; i++) {
         for (let j = 0; j < 17; j++) {
             let square = new PIXI.Graphics();
@@ -33,11 +36,14 @@ function setup() {
         }
     }
 
+    // Add pieces
     for (let i = 0; i < 17; i++) {
         pawns.push(getBlackPawn(i, 1));
         app.stage.addChild(pawns[i]);
     }
 
+
+    // Start game loop
     app.ticker.add(d => gameLoop(d));
 
 }
@@ -97,8 +103,8 @@ function keyboard(value) {
 }
 
 function getBlackPawn(x, y) {
+    // Init
     let pawn = new PIXI.Sprite(PIXI.loader.resources["images/pawn.png"].texture);
-
     pawn.width = squareSize;
     pawn.height = squareSize;
     pawn.x = x * squareSize;
@@ -106,6 +112,8 @@ function getBlackPawn(x, y) {
     pawn.interactive = true;
     pawn.mousemode = true;
     pawn.move = false;
+
+    // Check if move availible, destroy dots
     pawn.on('pointerup', () => {
         pawn.move = false;
         if (dots.some(
@@ -123,6 +131,8 @@ function getBlackPawn(x, y) {
         destroy(dots);
         console.log(dots)
     });
+
+    // display all availible moves
     pawn.on('pointerdown', () => {
         pawn.move = true;
         pawn.origin = {x: pawn.x, y: pawn.y}
@@ -148,6 +158,8 @@ function getBlackPawn(x, y) {
             }
         }
     });
+
+    // Pawn follows cursor
     pawn.on('pointermove', (event) => {
         if (pawn.move) {
             let e = event.data.global;
@@ -159,6 +171,7 @@ function getBlackPawn(x, y) {
     return pawn
 }
 
+// Dot factory, takes arrays
 function getDot(x, y) {
     let ds = [];
     for (let i = 0; i < x.length; i++) {
@@ -172,10 +185,12 @@ function getDot(x, y) {
     return ds;
 }
 
+// Find nearest square
 function snap(a) {
     return Math.floor((a + squareSize / 2) / squareSize)
 }
 
+// Destroy object in container or array
 function destroy(a) {
     if (a instanceof Array) {
         for (let i of a) {
