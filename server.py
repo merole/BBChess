@@ -6,7 +6,8 @@ from flask_socketio import SocketIO
 test_config = None
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_mapping(
-    SECRET_KEY="dev"
+    SECRET_KEY="dev",
+    cors_allowed_origins="*"
 )
 
 if test_config is None:
